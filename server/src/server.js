@@ -5,6 +5,9 @@ var app = express();
 // Parses response bodies.
 var bodyParser = require('body-parser');
 var database = require('./database');
+var mongo_express = require('mongo-express/lib/middleware');
+// Import the default Mongo Express configuration
+var mongo_express_config = require('mongo-express/config.default.js');
 var readDocument = database.readDocument;
 var writeDocument = database.writeDocument;
 var deleteDocument = database.deleteDocument;
@@ -13,6 +16,8 @@ var getCollection = database.getCollection;
 var StatusUpdateSchema = require('./schemas/statusupdate.json');
 var CommentSchema = require('./schemas/comment.json');
 var validate = require('express-jsonschema').validate;
+
+app.use('/mongo_express', mongo_express(mongo_express_config));
 
 app.use(bodyParser.text());
 app.use(bodyParser.json());
@@ -137,7 +142,7 @@ app.post('/feeditem', validate({ body: StatusUpdateSchema }), function(req, res)
   // If this function runs, `req.body` passed JSON validation!
   var body = req.body;
   var fromUser = getUserIdFromToken(req.get('Authorization'));
-  
+
   // Check if requester is authorized to post this status update.
   // (The requester must be the author of the update.)
   if (fromUser === body.userId) {
